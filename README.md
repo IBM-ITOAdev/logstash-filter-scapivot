@@ -1,86 +1,113 @@
-# Logstash Plugin
+<html>
+<head>
+<meta charset="UTF-8">
+<title>logstash for SCAPI - filter scapivot</title>
+<link rel="stylesheet" href="http://logstash.net/style.css">
+</head>
+<body>
+<div class="container">
 
-This is a plugin for [Logstash](https://github.com/elasticsearch/logstash).
+<div id="content_right">
+<!--main content goes here, yo!-->
+<div class="content_wrapper">
 
-It is fully free and fully open source. The license is Apache 2.0, meaning you are pretty much free to use it however you want in whatever way.
-
-## Documentation
-
-Logstash provides infrastructure to automatically generate documentation for this plugin. We use the asciidoc format to write documentation so any comments in the source code will be first converted into asciidoc and then into html. All plugin documentation are placed under one [central location](http://www.elasticsearch.org/guide/en/logstash/current/).
-
-- For formatting code or config example, you can use the asciidoc `[source,ruby]` directive
-- For more asciidoc formatting tips, see the excellent reference here https://github.com/elasticsearch/docs#asciidoc-guide
-
-## Need Help?
-
-Need help? Try #logstash on freenode IRC or the logstash-users@googlegroups.com mailing list.
-
-## Developing
-
-### 1. Plugin Developement and Testing
-
-#### Code
-- To get started, you'll need JRuby with the Bundler gem installed.
-
-- Create a new plugin or clone and existing from the GitHub [logstash-plugins](https://github.com/logstash-plugins) organization. We also provide [example plugins](https://github.com/logstash-plugins?query=example).
-
-- Install dependencies
-```sh
-bundle install
-```
-
-#### Test
-
-- Update your dependencies
-
-```sh
-bundle install
-```
-
-- Run tests
-
-```sh
-bundle exec rspec
-```
-
-### 2. Running your unpublished Plugin in Logstash
-
-#### 2.1 Run in a local Logstash clone
-
-- Edit Logstash `Gemfile` and add the local plugin path, for example:
-```ruby
-gem "logstash-filter-awesome", :path => "/your/local/logstash-filter-awesome"
-```
-- Install plugin
-```sh
-bin/plugin install --no-verify
-```
-- Run Logstash with your plugin
-```sh
-bin/logstash -e 'filter {awesome {}}'
-```
-At this point any modifications to the plugin code will be applied to this local Logstash setup. After modifying the plugin, simply rerun Logstash.
-
-#### 2.2 Run in an installed Logstash
-
-You can use the same **2.1** method to run your plugin in an installed Logstash by editing its `Gemfile` and pointing the `:path` to your local plugin development directory or you can build the gem and install it using:
-
-- Build your plugin gem
-```sh
-gem build logstash-filter-awesome.gemspec
-```
-- Install the plugin from the Logstash home
-```sh
-bin/plugin install /your/local/plugin/logstash-filter-awesome.gem
-```
-- Start Logstash and proceed to test the plugin
-
-## Contributing
-
-All contributions are welcome: ideas, patches, documentation, bug reports, complaints, and even something you drew up on a napkin.
-
-Programming is not a required skill. Whatever you've seen about open source and maintainers or community members  saying "send patches or die" - you will not see that here.
-
-It is more important to the community that you are able to contribute.
-
-For more information about contributing, see the [CONTRIBUTING](https://github.com/elasticsearch/logstash/blob/master/CONTRIBUTING.md) file.
+<h2>scapivot</h2>
+<h3>Milestone: <a href="http://logstash.net/docs/1.4.2/plugin-milestones">1</a></h3>
+<h3> Synopsis </h3>
+Receives a stream of events and pivots them from 'skinny' to 'wide' (also known as a 'Vertical' pivot in DataStage)
+It groups the events into sets with the same <code>window_column</code> (see below) and pivots each set.
+<p>
+<pre><code>filter {
+  scacsv {
+    <a href="#window_column">window_column</a> => ... # string (required)
+    <a href="#fixed_columns">fixed_columns</a> => ... # array (required)
+    <a href="#target_column">target_column</a> => ... # string (required)
+    <a href="#value_column">value_column</a> => ... # string (required)
+    <a href="#flush_interval">flush_interval</a> => ... # number (optional), default: 60
+   }
+}
+</code></pre>
+<h3> Details </h3>
+<p>
+As events come in, those that have matching values for <code>window_column</code> are buffered. Once a new event with a different value for <code>window_column</code> arrives, the buffered events will be pivoted and a new set of events output. Pivoting is achieved by selecting all the unique <code>fixed_columns</code> sets, and for each of those sets, determining the values from the corresponding <code>target_column</code>s. Those values are output in new events with a set of columns for the <code>fixed_columns</code> and columns for each unique <code>value_column</code>
+</p>
+<h4>
+<a name="window_column">
+window_column
+</a>
+</h4>
+<ul>
+<li> Value type is <a href="http://logstash.net/docs/1.4.2/configuration#string">String</a> </li>
+<li> There is no default for this setting </li>
+</ul>
+<p>Field used to group data within a window, prior to pivoting. For SCAPI, this is generally the timestamp field</p>
+<h4>
+<a name="fixed_columns">
+fixed_columns
+</a>
+</h4>
+<ul>
+<li> Value type is <a href="http://logstash.net/docs/1.4.2/configuration#string">String</a> </li>
+<li> There is no default for this setting </li>
+</ul>
+<p>
+Set of field names which will be used to uniquely identify a set of rows. All rows with the same values for fixed_columns will have their pivoted values assigend to a single output row (event)
+</p>
+<h4>
+<a name="target_column">
+target_column
+</a>
+</h4>
+<ul>
+<li> Value type is <a href="http://logstash.net/docs/1.4.2/configuration#string">string</a> </li>
+<li> There is no default for this setting </li>
+</ul>
+<p>
+Name of field where the identity of the field in the produced pivoted row is to be found
+</p>
+<h4>
+<a name="value_column">
+value_column
+</a>
+</h4>
+<ul>
+<li> Value type is <a href="http://logstash.net/docs/1.4.2/configuration#dytomh">string</a> </li>
+<li> There is no default value for this setting. </li>
+</ul>
+<p>
+This configuration setting is used to identify the field in the input tuple/column which contains the metric values.
+</p>
+<h4>
+<a name="flush_interval">
+flush_interval
+</a>
+</h4>
+<ul>
+<li> Value type is <a href="http://logstash.net/docs/1.4.2/configuration#string">string</a> </li>
+<li> There is no default for this setting </li>
+</ul>
+<p>
+Amount of time (seconds) to wait before pivoting and flushing the currently cached events. In normal steady-state event flow, an event with a new value for <code>window_column</code> will trigger a pivot and flush, but if the event is the last one in a series, then an alternative mechanism, such as this timer-based one, is needed to trigger the pivot and flush.
+</p>
+<hr>
+</div>
+<div class="clear">
+</div>
+</div>
+</div>
+<!--closes main container div-->
+<div class="clear">
+</div>
+<div class="footer">
+<p>
+Hello! I'm your friendly footer. If you're actually reading this, I'm impressed.
+</p>
+</div>
+<noscript>
+<div style="display:inline;">
+<img height="1" width="1" style="border-style:none;" alt="" src="//googleads.g.doubleclick.net/pagead/viewthroughconversion/985891458/?value=0&amp;guid=ON&amp;script=0"/>
+</div>
+</noscript>
+<script src="/js/patch.js?1.4.2"></script>
+</body>
+</html>
